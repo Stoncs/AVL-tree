@@ -13,6 +13,10 @@ class AvlTree<T : Comparable<T>> : AbstractMutableSet<T>() {
 
     override var size = 0
 
+    private fun height(node: Node<T>?): Int {
+        return node?.height ?: -1
+    }
+
     private fun find(element: T): Node<T>? =
         root?.let { find(it, element)}
 
@@ -82,9 +86,6 @@ class AvlTree<T : Comparable<T>> : AbstractMutableSet<T>() {
         TODO("Not yet implemented")
     }
 
-    private fun height(node: Node<T>?): Int {
-        return node?.height ?: -1
-    }
     override fun iterator(): MutableIterator<T> {
         TODO("Not yet implemented")
     }
