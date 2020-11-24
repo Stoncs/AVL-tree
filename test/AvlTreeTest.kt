@@ -43,6 +43,59 @@ class AvlTreeTest {
     }
 
     @Test
+    fun doRemoveTest() {
+        val random = Random()
+        for (iteration in 1..100) {
+            val controlSet = mutableSetOf<Int>()
+            val removeIndex = random.nextInt(20) + 1
+            var toRemove = 0
+            for (i in 1..20) {
+                val newNumber = random.nextInt(100)
+                controlSet.add(newNumber)
+                if (i == removeIndex) {
+                    toRemove = newNumber
+                }
+            }
+            println("Initial set: $controlSet")
+            val binarySet = AvlTree<Int>()
+            for (element in controlSet) {
+                binarySet.add(element)
+            }
+            controlSet.remove(toRemove)
+            println("Control set: $controlSet")
+            val expectedSize = binarySet.size - 1
+            val maxHeight = binarySet.height()
+            println("Removing element $toRemove from the tree...")
+            assertTrue(
+                    binarySet.remove(toRemove),
+                    "An element was supposedly not removed from the tree when it should have been."
+            )
+            assertTrue(
+                    toRemove !in binarySet,
+                    "The tree contains a supposedly removed element."
+            )
+            assertTrue(
+                    binarySet.height() <= maxHeight,
+                    "The tree's height increased after BinarySearchTree.remove()."
+            )
+            assertFalse(
+                    binarySet.remove(toRemove),
+                    "An element that was already not in the tree was supposedly removed."
+            )
+            assertEquals(
+                    expectedSize, binarySet.size,
+                    "The size of the tree is incorrect: was ${binarySet.size}, should've been $expectedSize."
+            )
+            for (element in controlSet) {
+                assertTrue(
+                        binarySet.contains(element),
+                        "The tree doesn't have the element $element from the control set."
+                )
+            }
+            println("All clear!")
+        }
+    }
+    @Test
     fun doIteratorTest() {
         val random = Random()
         for (iteration in 1..100) {
@@ -165,20 +218,18 @@ class AvlTreeTest {
 
     @Test
     fun toSomeSituation() {
+        val controlSet = mutableSetOf(64, 63, 84, 97, 15)
+        var toRemove = 63
+        println("Initial set: $controlSet")
         val binarySet = AvlTree<Int>()
-        val controlSet = TreeSet<Int>()
-        val listOfInt = listOf(84, 83, 2, 16, 63, 12, 21, 56, 9, 99)
-        for (i in listOfInt) {
-            binarySet.add(i)
-            controlSet.add(i)
+        for (element in controlSet) {
+            binarySet.add(element)
         }
-        val iterator = binarySet.iterator()
-        val iterator2 = controlSet.iterator()
-        while (iterator.hasNext()) {
-            assertEquals(
-                    iterator.next(), iterator2.next(),
-                    "BinarySearchTreeIterator doesn't traverse the tree correctly."
-            )
-        }
+        binarySet.remove(toRemove)
+        controlSet.remove(toRemove)
+        println("binarySet: $controlSet")
+        assertTrue(
+                toRemove !in binarySet,
+                "The tree contains a supposedly removed element.")
     }
 }

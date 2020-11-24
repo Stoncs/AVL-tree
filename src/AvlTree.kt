@@ -17,11 +17,14 @@ class AvlTree<T : Comparable<T>> : AbstractMutableSet<T>(), SortedSet<T> {
 
     override var size = 0
 
+    public fun height(): Int {
+        return height(root)
+    }
+
     private fun height(node: Node<T>?): Int {
         if (node == null) return 0
         return 1 + maxOf(height(node.left), height(node.right))
     }
-
 
     private fun find(value: T): Node<T>? =
             root?.let { find(it, value) }
@@ -65,16 +68,60 @@ class AvlTree<T : Comparable<T>> : AbstractMutableSet<T>(), SortedSet<T> {
         return true
     }
 
-    private fun balance(currentNode: Node<T>): Boolean {
+    override fun remove(element: T): Boolean {
+        var replacementNode: Node<T>
+        val parent: Node<T>
+        var currentNode = find(element)
+        if (currentNode == null || currentNode.value != element) return false
+        if (currentNode.left == null && currentNode.right == null) {
+            //а если корень дерева?
+            if (currentNode == root) {
+                root = null
+            } else {
+                if (currentNode == currentNode.parent?.left) {
+                    currentNode.parent?.left = null
+                } else {
+                    currentNode.parent?.right = null
+                }
+                while (currentNode != root) {
+                    currentNode = currentNode?.parent!!
+                    balance(currentNode)
+                }
+            }
+            size--
+            return true
+        }
+        if (currentNode.left != null) {
+            replacementNode = currentNode.left!!
+            while (replacementNode.right != null) {
+                replacementNode = replacementNode.right!!
+            }
+            currentNode.value = replacementNode.value
+            replacementNode.parent = replacementNode.left
+            size--
+        } else {
+            replacementNode = currentNode.right!!
+            currentNode.value = replacementNode.value
+            currentNode.right = replacementNode.right
+            currentNode.left = replacementNode.left
+            size--
+
+        }
+        while (currentNode != root) {
+            currentNode = currentNode?.parent!!
+            balance(currentNode)
+        }
+        return true
+    }
+
+    private fun balance(currentNode: Node<T>){
         if (currentNode.right != null) {
             if (height(currentNode.right) - height(currentNode.left) == 2) {
                 if (height(currentNode.right!!.left) <= height(currentNode.right!!.right)) {
                     smallLeftRotation(currentNode)
-                    return true
                 }
                 else {
                     largeLeftRotation(currentNode)
-                    return true
                 }
 
             }
@@ -83,15 +130,12 @@ class AvlTree<T : Comparable<T>> : AbstractMutableSet<T>(), SortedSet<T> {
             if (height(currentNode.left) - height(currentNode.right) == 2) {
                 if (height(currentNode.left!!.right) <= height(currentNode.left!!.left)) {
                     smallRightRotation(currentNode)
-                    return true
                 }
                 else {
                     largeRightRotation(currentNode)
-                    return true
                 }
             }
         }
-        return false
     }
 
     /*
