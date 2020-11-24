@@ -88,12 +88,10 @@ class AvlTreeTest {
     fun toSmallLeftRotation() {
         val binarySet = AvlTree<Int>()
         val controlSet = TreeSet<Int>()
-        controlSet.add(9)
-        controlSet.add(10)
-        controlSet.add(14)
-        controlSet.add(16)
-        for (i in controlSet) {
+        val listOfInt = listOf(9, 10, 14, 16)
+        for (i in listOfInt) {
             binarySet.add(i)
+            controlSet.add(i)
         }
         val iterator = binarySet.iterator()
         val iterator2 = controlSet.iterator()
@@ -109,15 +107,17 @@ class AvlTreeTest {
     @Test
     fun toLargeLeftRotation() {
         val binarySet = AvlTree<Int>()
-        val controlSet = mutableSetOf(10, 2, 50, 1, 30, 100, 150, 80, 90)
-        for (i in controlSet) {
+        val controlSet = TreeSet<Int>()
+        val listOfInt = listOf(10, 2, 50, 1, 30, 100, 150, 80, 90)
+        for (i in listOfInt) {
             binarySet.add(i)
+            controlSet.add(i)
         }
         val iterator = binarySet.iterator()
         val iterator2 = controlSet.iterator()
         while (iterator.hasNext()) {
             assertEquals(
-                    iterator.next(), iterator2.next(),
+                    iterator2.next(), iterator.next(),
                     "BinarySearchTreeIterator doesn't traverse the tree correctly."
             )
         }
