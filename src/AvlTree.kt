@@ -1,12 +1,13 @@
 package avlTree
 
+import java.lang.Math.abs
 import java.util.*
 
 class AvlTree<T : Comparable<T>> : AbstractMutableSet<T>(), SortedSet<T> {
 
-    private class Node<T>(
+    class Node<T>(
             var value: T,
-            val parent: Node<T>?
+            var parent: Node<T>?
     ) {
         var left: Node<T>? = null
         var right: Node<T>? = null
@@ -55,9 +56,10 @@ class AvlTree<T : Comparable<T>> : AbstractMutableSet<T>(), SortedSet<T> {
             else -> closest.right = Node(element, closest)
         }
         var currentNode = closest!!
+        balance(currentNode)
         while (currentNode != root) {
-            balance(currentNode)
             currentNode = currentNode.parent!!
+            balance(currentNode)
         }
         return true
     }
@@ -97,22 +99,25 @@ class AvlTree<T : Comparable<T>> : AbstractMutableSet<T>(), SortedSet<T> {
     */
     private fun smallLeftRotation(node: Node<T>) {
         val newBranchNode: Node<T>
-        val b = node.right!!
+        val a = node
+        val b = a.right!!
         val c = b.left
         newBranchNode = b
-        newBranchNode.left = node
+        newBranchNode.left = a
         newBranchNode.left?.right = c
         //проверка на корень
         if (node.parent != null) {
             //правый или левый ребёнок исходный нод
-            if (node.parent.right == node) {
-                node.parent.right = newBranchNode
+            if (node.parent!!.right == node) {
+                node.parent!!.right = newBranchNode
             } else {
-                node.parent.left = newBranchNode
+                node.parent!!.left = newBranchNode
             }
         } else {
             root = newBranchNode
         }
+        b.parent = a.parent
+        a.parent = b
     }
 
     /*
@@ -133,26 +138,30 @@ class AvlTree<T : Comparable<T>> : AbstractMutableSet<T>(), SortedSet<T> {
     */
     private fun largeLeftRotation(node: Node<T>) {
         val newBranchNode: Node<T>
-        val b = node.right!!
+        val a = node
+        val b = a.right!!
         val c = b.left
         val m = c?.left
         val n = c?.right
         newBranchNode = c!!
-        newBranchNode.left = node
+        a.right = m
+        b.left = n
+        newBranchNode.left = a
         newBranchNode.right = b
-        newBranchNode.left?.right = m
-        newBranchNode.right?.left = n
         //проверка на корень
         if (node.parent != null) {
             //правый или левый ребёнок исходный нод
-            if (node.parent.right == node) {
-                node.parent.right = newBranchNode
+            if (node.parent!!.right == node) {
+                node.parent!!.right = newBranchNode
             } else {
-                node.parent.left = newBranchNode
+                node.parent!!.left = newBranchNode
             }
         } else {
             root = newBranchNode
         }
+        c.parent = a.parent
+        a.parent = c
+        b.parent = c
     }
 
     /*
@@ -179,10 +188,10 @@ class AvlTree<T : Comparable<T>> : AbstractMutableSet<T>(), SortedSet<T> {
         //проверка на корень
         if (node.parent != null) {
             //правый или левый ребёнок исходный нод
-            if (node.parent.right == node) {
-                node.parent.right = newBranchNode
+            if (node.parent!!.right == node) {
+                node.parent!!.right = newBranchNode
             } else {
-                node.parent.left = newBranchNode
+                node.parent!!.left = newBranchNode
             }
         } else {
             root = newBranchNode
@@ -219,10 +228,10 @@ class AvlTree<T : Comparable<T>> : AbstractMutableSet<T>(), SortedSet<T> {
         //проверка на корень
         if (node.parent != null) {
             //правый или левый ребёнок исходный нод
-            if (node.parent.right == node) {
-                node.parent.right = newBranchNode
+            if (node.parent!!.right == node) {
+                node.parent!!.right = newBranchNode
             } else {
-                node.parent.left = newBranchNode
+                node.parent!!.left = newBranchNode
             }
         } else {
             root = newBranchNode
@@ -255,6 +264,8 @@ class AvlTree<T : Comparable<T>> : AbstractMutableSet<T>(), SortedSet<T> {
             if (stack.isEmpty()) throw NoSuchElementException()
             currentNode = stack.pop()
             addLeftBranch(currentNode?.right)
+            //для тестов
+            println("${currentNode!!.value} " + height(currentNode))
             return currentNode!!.value
         }
 
