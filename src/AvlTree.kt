@@ -61,26 +61,37 @@ class AvlTree<T : Comparable<T>> : AbstractMutableSet<T>(), SortedSet<T> {
             currentNode = currentNode.parent!!
             balance(currentNode)
         }
+        //println("$this")
         return true
     }
 
-    private fun balance(currentNode: Node<T>) {
+    private fun balance(currentNode: Node<T>): Boolean {
         if (currentNode.right != null) {
             if (height(currentNode.right) - height(currentNode.left) == 2) {
-                if (height(currentNode.right!!.left) <= height(currentNode.right!!.right))
+                if (height(currentNode.right!!.left) <= height(currentNode.right!!.right)) {
                     smallLeftRotation(currentNode)
-                else
+                    return true
+                }
+                else {
                     largeLeftRotation(currentNode)
+                    return true
+                }
+
             }
         }
         if (currentNode.left != null) {
             if (height(currentNode.left) - height(currentNode.right) == 2) {
-                if (height(currentNode.left!!.right) <= height(currentNode.right!!.left))
-                    smallLeftRotation(currentNode)
-                else
-                    largeLeftRotation(currentNode)
+                if (height(currentNode.left!!.right) <= height(currentNode.left!!.left)) {
+                    smallRightRotation(currentNode)
+                    return true
+                }
+                else {
+                    largeRightRotation(currentNode)
+                    return true
+                }
             }
         }
+        return false
     }
 
     /*
@@ -118,6 +129,7 @@ class AvlTree<T : Comparable<T>> : AbstractMutableSet<T>(), SortedSet<T> {
         }
         b.parent = a.parent
         a.parent = b
+        c?.parent = a
     }
 
     /*
@@ -162,6 +174,8 @@ class AvlTree<T : Comparable<T>> : AbstractMutableSet<T>(), SortedSet<T> {
         c.parent = a.parent
         a.parent = c
         b.parent = c
+        m?.parent = a
+        n?.parent = b
     }
 
     /*
@@ -180,10 +194,11 @@ class AvlTree<T : Comparable<T>> : AbstractMutableSet<T>(), SortedSet<T> {
     */
     private fun smallRightRotation(node: Node<T>) {
         val newBranchNode: Node<T>
-        val b = node.left!!
+        val a = node
+        val b = a.left!!
         val c = b.right
         newBranchNode = b
-        newBranchNode.right = node
+        newBranchNode.right = a
         newBranchNode.right?.left = c
         //проверка на корень
         if (node.parent != null) {
@@ -196,6 +211,9 @@ class AvlTree<T : Comparable<T>> : AbstractMutableSet<T>(), SortedSet<T> {
         } else {
             root = newBranchNode
         }
+        b.parent = a.parent
+        a.parent = b
+        c?.parent = a
     }
 
     /*
@@ -216,12 +234,13 @@ class AvlTree<T : Comparable<T>> : AbstractMutableSet<T>(), SortedSet<T> {
     */
     private fun largeRightRotation(node: Node<T>) {
         val newBranchNode: Node<T>
-        val b = node.left!!
+        val a = node
+        val b = a.left!!
         val c = b.right
         val m = c?.left
         val n = c?.right
         newBranchNode = c!!
-        newBranchNode.right= node
+        newBranchNode.right= a
         newBranchNode.left = b
         newBranchNode.left?.right = m
         newBranchNode.right?.left = n
@@ -236,6 +255,11 @@ class AvlTree<T : Comparable<T>> : AbstractMutableSet<T>(), SortedSet<T> {
         } else {
             root = newBranchNode
         }
+        c.parent = a.parent
+        a.parent = c
+        b.parent = c
+        m?.parent = b
+        n?.parent = a
     }
 
     override fun iterator(): MutableIterator<T> =
@@ -265,7 +289,7 @@ class AvlTree<T : Comparable<T>> : AbstractMutableSet<T>(), SortedSet<T> {
             currentNode = stack.pop()
             addLeftBranch(currentNode?.right)
             //для тестов
-            println("${currentNode!!.value} " + height(currentNode))
+            //println("${currentNode!!.value} " + height(currentNode))
             return currentNode!!.value
         }
 
