@@ -316,36 +316,36 @@ class AvlTreeTest {
         }
     }
 
-    @Test
-    fun toSomeSituation() {
-        val controlSet = mutableSetOf(83, 78, 98, 99)
-        val toRemove = 78
-        println("Initial set: $controlSet")
-        val binarySet = AvlTree<Int>()
-        for (element in controlSet) {
-            binarySet.add(element)
-        }
-        val iterator = binarySet.iterator()
-        controlSet.remove(toRemove)
-        println("controlSet: $controlSet")
-        var counter = binarySet.size
-        while (iterator.hasNext()) {
-            val element = iterator.next()
-            print("$element, ")
-            counter--
-            if (element == toRemove) {
-                iterator.remove()
-                assertFailsWith<IllegalStateException>("BinarySearchTreeIterator.remove() was successfully called twice in a row.") {
-                    iterator.remove()
-                }
-            }
-        }
-        assertEquals(
-                0, counter,
-                "BinarySearchTreeIterator.remove() changed iterator position: ${abs(counter)} elements were ${if (counter > 0) "skipped" else "revisited"}."
-        )
-        assertTrue(
-                toRemove !in binarySet,
-                "The tree contains a supposedly removed element.")
-    }
+//    @Test
+//    fun toSomeSituation() {
+//        val controlSet = mutableSetOf(83, 78, 98, 99)
+//        val toRemove = 78
+//        println("Initial set: $controlSet")
+//        val binarySet = AvlTree<Int>()
+//        for (element in controlSet) {
+//            binarySet.add(element)
+//        }
+//        val iterator = binarySet.iterator()
+//        controlSet.remove(toRemove)
+//        println("controlSet: $controlSet")
+//        var counter = binarySet.size
+//        while (iterator.hasNext()) {
+//            val element = iterator.next()
+//            print("$element, ")
+//            counter--
+//            if (element == toRemove) {
+//                iterator.remove()
+//                assertFailsWith<IllegalStateException>("BinarySearchTreeIterator.remove() was successfully called twice in a row.") {
+//                    iterator.remove()
+//                }
+//            }
+//        }
+//        assertEquals(
+//                0, counter,
+//                "BinarySearchTreeIterator.remove() changed iterator position: ${abs(counter)} elements were ${if (counter > 0) "skipped" else "revisited"}."
+//        )
+//        assertTrue(
+//                toRemove !in binarySet,
+//                "The tree contains a supposedly removed element.")
+//    }
 }

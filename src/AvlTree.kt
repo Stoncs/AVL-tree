@@ -316,6 +316,7 @@ class AvlTree<T : Comparable<T>> : AbstractMutableSet<T>(), SortedSet<T> {
     inner class BinarySearchTreeIterator internal constructor() : MutableIterator<T> {
         private var currentNode: Node<T>? = null
         private val stack = Stack<Node<T>>()
+        private var count = 0
 
         init {
             addLeftBranch(root)
@@ -335,10 +336,11 @@ class AvlTree<T : Comparable<T>> : AbstractMutableSet<T>(), SortedSet<T> {
         override fun next(): T {
             if (stack.isEmpty()) throw NoSuchElementException()
             currentNode = stack.pop()
+            count++
             addLeftBranch(currentNode?.right)
             //В некоторых редких ситуациях после удаления элемента, когда дерево балансируется с помощью малого
             //левого поворота, становится невозможно пройтись до конца дерева
-            if (stack.size == 0 && currentNode != this@AvlTree.last()) stack.push(currentNode!!.parent)
+            if (stack.size == 0 && count < size) stack.push(currentNode!!.parent)
             //для тестов
             //println("${currentNode!!.value} " + height(currentNode))
             return currentNode!!.value
