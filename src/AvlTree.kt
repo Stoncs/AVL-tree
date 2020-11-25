@@ -17,7 +17,7 @@ class AvlTree<T : Comparable<T>> : AbstractMutableSet<T>(), SortedSet<T> {
 
     override var size = 0
 
-    public fun height(): Int {
+    fun height(): Int {
         return height(root)
     }
 
@@ -69,47 +69,51 @@ class AvlTree<T : Comparable<T>> : AbstractMutableSet<T>(), SortedSet<T> {
     }
 
     override fun remove(element: T): Boolean {
-        var replacementNode: Node<T>
-        val parent: Node<T>
-        var currentNode = find(element)
+        val currentNode = find(element)
         if (currentNode == null || currentNode.value != element) return false
-        if (currentNode.left == null && currentNode.right == null) {
+        return removeNode(currentNode)
+    }
+
+    private fun removeNode(node: Node<T>): Boolean {
+        var replacementNode: Node<T>
+        if (node.left == null && node.right == null) {
             //а если корень дерева?
-            if (currentNode == root) {
+            if (node == root) {
                 root = null
             } else {
-                if (currentNode == currentNode.parent?.left) {
-                    currentNode.parent?.left = null
+                if (node == node.parent?.left) {
+                    node.parent?.left = null
                 } else {
-                    currentNode.parent?.right = null
+                    node.parent?.right = null
                 }
-                while (currentNode != root) {
-                    currentNode = currentNode?.parent!!
-                    balance(currentNode)
+                var nodeBalance = node
+                while (nodeBalance != root) {
+                    nodeBalance = nodeBalance.parent!!
+                    balance(nodeBalance)
                 }
             }
             size--
             return true
         }
-        if (currentNode.left != null) {
-            replacementNode = currentNode.left!!
+        if (node.left != null) {
+            replacementNode = node.left!!
             while (replacementNode.right != null) {
                 replacementNode = replacementNode.right!!
             }
-            currentNode.value = replacementNode.value
+            node.value = replacementNode.value
             replacementNode.parent = replacementNode.left
-            size--
         } else {
-            replacementNode = currentNode.right!!
-            currentNode.value = replacementNode.value
-            currentNode.right = replacementNode.right
-            currentNode.left = replacementNode.left
-            size--
+            replacementNode = node.right!!
+            node.value = replacementNode.value
+            node.right = replacementNode.right
+            node.left = replacementNode.left
 
         }
-        while (currentNode != root) {
-            currentNode = currentNode?.parent!!
-            balance(currentNode)
+        size--
+        var nodeBalance = node
+        while (nodeBalance != root) {
+            nodeBalance = nodeBalance.parent!!
+            balance(nodeBalance)
         }
         return true
     }
@@ -332,6 +336,9 @@ class AvlTree<T : Comparable<T>> : AbstractMutableSet<T>(), SortedSet<T> {
             if (stack.isEmpty()) throw NoSuchElementException()
             currentNode = stack.pop()
             addLeftBranch(currentNode?.right)
+            //В некоторых редких ситуациях после удаления элемента, когда дерево балансируется с помощью малого
+            //левого поворота, становится невозможно пройтись до конца дерева
+            if (stack.size == 0 && currentNode != this@AvlTree.last()) stack.push(currentNode!!.parent)
             //для тестов
             //println("${currentNode!!.value} " + height(currentNode))
             return currentNode!!.value
@@ -339,10 +346,10 @@ class AvlTree<T : Comparable<T>> : AbstractMutableSet<T>(), SortedSet<T> {
 
 
         override fun remove() {
-            TODO("Not yet implemented")
+            check(currentNode != null)
+            removeNode(currentNode!!)
+            currentNode = null
         }
-
-
     }
 
     override fun comparator(): Comparator<in T>? =
@@ -361,10 +368,18 @@ class AvlTree<T : Comparable<T>> : AbstractMutableSet<T>(), SortedSet<T> {
     }
 
     override fun first(): T {
-        TODO("Not yet implemented")
+        var currentNode: Node<T> = root ?: throw NoSuchElementException()
+        while (currentNode.left != null) {
+            currentNode = currentNode.left!!
+        }
+        return currentNode.value
     }
 
     override fun last(): T {
-        TODO("Not yet implemented")
+        var currentNode: Node<T> = root ?: throw NoSuchElementException()
+        while (currentNode.right != null) {
+            currentNode = currentNode.right!!
+        }
+        return currentNode.value
     }
 }

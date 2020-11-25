@@ -2,6 +2,7 @@ package avlTree
 
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import java.lang.Math.abs
 import java.util.*
 import kotlin.test.assertFailsWith
 
@@ -39,6 +40,41 @@ class AvlTreeTest {
                         "The tree doesn't have the element $element from the control set. ControlSet: $controlSet"
                 )
             }
+        }
+    }
+
+    @Test
+    fun doFirstAndLastTest() {
+        val random = Random()
+        for (iteration in 1..100) {
+            val controlSet = sortedSetOf<Int>()
+            for (i in 1..10) {
+                controlSet += random.nextInt(100)
+            }
+            println("Control set: $controlSet")
+            val expectedFirst = controlSet.first()
+            val expectedLast = controlSet.last()
+            val binarySet = AvlTree<Int>()
+            assertFailsWith<NoSuchElementException>("A first element was found in an empty tree.") {
+                binarySet.first()
+            }
+            assertFailsWith<NoSuchElementException>("A last element was found in an empty tree.") {
+                binarySet.last()
+            }
+            for (element in controlSet) {
+                binarySet.add(element)
+            }
+            val actualFirst = binarySet.first()
+            val actualLast = binarySet.last()
+            assertEquals(
+                    expectedFirst, actualFirst,
+                    "The first element was determined incorrectly: was $actualFirst, should've been $expectedFirst."
+            )
+            assertEquals(
+                    expectedLast, actualLast,
+                    "The last element was determined incorrectly: was $actualLast, should've been $expectedLast."
+            )
+            println("First element: $actualFirst. Last element: $actualLast.")
         }
     }
 
@@ -95,6 +131,7 @@ class AvlTreeTest {
             println("All clear!")
         }
     }
+
     @Test
     fun doIteratorTest() {
         val random = Random()
@@ -217,17 +254,96 @@ class AvlTreeTest {
     }
 
     @Test
+    fun doIteratorRemoveTest() {
+        val random = Random()
+        for (iteration in 1..100) {
+            val controlSet = TreeSet<Int>()
+            val removeIndex = random.nextInt(20) + 1
+            var toRemove = 0
+            for (i in 1..20) {
+                val newNumber = random.nextInt(100)
+                controlSet.add(newNumber)
+                if (i == removeIndex) {
+                    toRemove = newNumber
+                }
+            }
+            println("Initial set: $controlSet")
+            val binarySet = AvlTree<Int>()
+            for (element in controlSet) {
+                binarySet.add(element)
+            }
+            controlSet.remove(toRemove)
+            println("Control set: $controlSet")
+            println("Removing element $toRemove from the tree through the iterator...")
+            val iterator = binarySet.iterator()
+            assertFailsWith<IllegalStateException>("Something was supposedly removed before the iteration started") {
+                iterator.remove()
+            }
+            var counter = binarySet.size
+            print("Iterating: ")
+            while (iterator.hasNext()) {
+                val element = iterator.next()
+                print("$element, ")
+                counter--
+                if (element == toRemove) {
+                    iterator.remove()
+                    assertFailsWith<IllegalStateException>("BinarySearchTreeIterator.remove() was successfully called twice in a row.") {
+                        iterator.remove()
+                    }
+                }
+            }
+            assertEquals(
+                    0, counter,
+                    "BinarySearchTreeIterator.remove() changed iterator position: ${abs(counter)} elements were ${if (counter > 0) "skipped" else "revisited"}."
+            )
+            assertEquals(
+                    controlSet.size, binarySet.size,
+                    "The size of the tree is incorrect: was ${binarySet.size}, should've been ${controlSet.size}."
+            )
+            for (element in controlSet) {
+                assertTrue(
+                        binarySet.contains(element),
+                        "The tree doesn't have the element $element from the control set."
+                )
+            }
+            for (element in binarySet) {
+                assertTrue(
+                        controlSet.contains(element),
+                        "The tree has the element $element that is not in control set."
+                )
+            }
+            println("All clear!")
+        }
+    }
+
+    @Test
     fun toSomeSituation() {
-        val controlSet = mutableSetOf(64, 63, 84, 97, 15)
-        var toRemove = 63
+        val controlSet = mutableSetOf(83, 78, 98, 99)
+        val toRemove = 78
         println("Initial set: $controlSet")
         val binarySet = AvlTree<Int>()
         for (element in controlSet) {
             binarySet.add(element)
         }
-        binarySet.remove(toRemove)
+        val iterator = binarySet.iterator()
         controlSet.remove(toRemove)
-        println("binarySet: $controlSet")
+        println("controlSet: $controlSet")
+        var counter = binarySet.size
+        while (iterator.hasNext()) {
+            val element = iterator.next()
+            print("$element, ")
+            counter--
+            if (element == toRemove) {
+                iterator.remove()
+                assertFailsWith<IllegalStateException>("BinarySearchTreeIterator.remove() was successfully called twice in a row.") {
+                    iterator.remove()
+                }
+            }
+        }
+        assertEquals(
+                0, counter,
+                "BinarySearchTreeIterator.remove() changed iterator position: ${abs(counter)} elements were ${if (counter > 0) "skipped" else "revisited"}."
+        )
         assertTrue(
                 toRemove !in binarySet,
                 "The tree contains a supposedly removed element.")
