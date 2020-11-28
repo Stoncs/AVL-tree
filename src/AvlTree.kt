@@ -1,9 +1,9 @@
 package avlTree
 
-import java.lang.Math.abs
+import java.lang.IllegalArgumentException
 import java.util.*
 
-class AvlTree<T : Comparable<T>> : AbstractMutableSet<T>(), SortedSet<T> {
+open class AvlTree<T : Comparable<T>> : AbstractMutableSet<T>(), SortedSet<T> {
 
     class Node<T>(
             var value: T,
@@ -355,18 +355,95 @@ class AvlTree<T : Comparable<T>> : AbstractMutableSet<T>(), SortedSet<T> {
     }
 
     override fun comparator(): Comparator<in T>? =
-        null
+        AvlTreeComparator()
+
+    inner class AvlTreeComparator : Comparator<T> {
+
+        override fun compare(o1: T, o2: T): Int {
+            val x = find(o1)!!
+            val y = find(o2)!!
+
+            return when {
+                x.value == y.value -> 0
+                x.value > y.value -> -1
+                else -> 1
+            }
+        }
+
+    }
 
     override fun subSet(fromElement: T, toElement: T): SortedSet<T> {
-        TODO("Not yet implemented")
+        if (fromElement >= toElement) throw IllegalArgumentException()
+        return SubTree(fromElement, toElement, this)
     }
 
     override fun headSet(toElement: T): SortedSet<T> {
-        TODO("Not yet implemented")
+        return SubTree(null, toElement, this)
     }
 
     override fun tailSet(fromElement: T): SortedSet<T> {
-        TODO("Not yet implemented")
+        return SubTree(fromElement, null, this)
+    }
+
+    inner class SubTree(private val bottom: T?, private val top: T?, private val tree: AvlTree<T>) : AvlTree<T>() {
+        override var size: Int
+            get() = super.size
+            set(value) {}
+
+        private fun check(element: T): Boolean {
+            return (bottom != null && top != null && element > bottom && element < top ||
+                    bottom == null && top != null && element < top ||
+                    bottom != null && top == null && element > bottom)
+        }
+        override fun add(element: T): Boolean {
+            if (!check(element)) throw IllegalArgumentException()
+            return tree.add(element)
+        }
+
+        override fun contains(element: T): Boolean {
+            return check(element) && tree.contains(element)
+        }
+
+        override fun remove(element: T): Boolean {
+            if (!check(element)) throw IllegalArgumentException()
+            return tree.remove(element)
+        }
+
+        override fun iterator(): MutableIterator<T> =
+                SubTreeIterator()
+
+        inner class SubTreeIterator: MutableIterator<T>{
+            private var currentNode: Node<T>? = null
+            private val stack = Stack<Node<T>>()
+
+            init {
+                addRightAndLeftBranch(root)
+            }
+
+            private fun addRightAndLeftBranch(node: Node<T>?) {
+                if (node != null) {
+                    addRightAndLeftBranch(node.right)
+                    stack.push(node)
+                    addRightAndLeftBranch(node.left)
+                }
+            }
+
+            override fun hasNext(): Boolean {
+                return stack.isNotEmpty()
+            }
+
+            override fun next(): T {
+                if (stack.isEmpty()) throw NoSuchElementException()
+                currentNode = stack.pop()
+                return currentNode!!.value
+            }
+
+            override fun remove() {
+                check(currentNode != null)
+                tree.removeNode(currentNode!!)
+            }
+        }
+
     }
 
     override fun first(): T {
@@ -383,5 +460,10 @@ class AvlTree<T : Comparable<T>> : AbstractMutableSet<T>(), SortedSet<T> {
             currentNode = currentNode.right!!
         }
         return currentNode.value
+    }
+
+    override fun clear() {
+        root = null
+        size = 0
     }
 }
