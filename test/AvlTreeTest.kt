@@ -316,36 +316,147 @@ class AvlTreeTest {
         }
     }
 
-//    @Test
-//    fun toSomeSituation() {
-//        val controlSet = mutableSetOf(83, 78, 98, 99)
-//        val toRemove = 78
-//        println("Initial set: $controlSet")
-//        val binarySet = AvlTree<Int>()
-//        for (element in controlSet) {
-//            binarySet.add(element)
-//        }
-//        val iterator = binarySet.iterator()
-//        controlSet.remove(toRemove)
-//        println("controlSet: $controlSet")
-//        var counter = binarySet.size
-//        while (iterator.hasNext()) {
-//            val element = iterator.next()
-//            print("$element, ")
-//            counter--
-//            if (element == toRemove) {
-//                iterator.remove()
-//                assertFailsWith<IllegalStateException>("BinarySearchTreeIterator.remove() was successfully called twice in a row.") {
-//                    iterator.remove()
-//                }
-//            }
-//        }
-//        assertEquals(
-//                0, counter,
-//                "BinarySearchTreeIterator.remove() changed iterator position: ${abs(counter)} elements were ${if (counter > 0) "skipped" else "revisited"}."
-//        )
-//        assertTrue(
-//                toRemove !in binarySet,
-//                "The tree contains a supposedly removed element.")
-//    }
+    @Test
+    fun toSubSet() {
+        val initialSet = mutableSetOf(50, 60, 23, 16, 44, 55, 10, 6)
+        val binarySet = AvlTree<Int>()
+        for (element in initialSet) {
+            binarySet.add(element)
+        }
+
+        val subSet = binarySet.subSet(8, 61)
+        val expectedSet1 = mutableSetOf(10, 16, 23, 44, 50, 55, 60)
+        var expectedSize = 7
+        for (i in subSet) {
+            assertTrue(i in expectedSet1)
+        }
+        assertEquals(expectedSize, subSet.size)
+        binarySet.add(79)
+        assertTrue(79 in binarySet)
+        assertFalse(79 in subSet)
+        assertEquals(expectedSize, subSet.size)
+        assertEquals(10, subSet.first())
+        assertEquals(60, subSet.last())
+
+        subSet.remove(50)
+        expectedSize--
+        assertFalse(50 in binarySet)
+        assertFalse(50 in subSet)
+        assertEquals(expectedSize, subSet.size)
+
+        try {
+            subSet.add(79)
+        } catch (e: IllegalArgumentException) {
+            assertFalse(79 in subSet)
+        }
+
+        val iterator1 = subSet.iterator()
+        val iterator2 = subSet.iterator()
+        while (iterator1.hasNext()) {
+            assertEquals(iterator1.next(), iterator2.next())
+        }
+
+        val iterator3 = subSet.iterator()
+        val expectedSet2 = mutableSetOf<Int>()
+        while (iterator3.hasNext()) {
+            expectedSet2.add(iterator3.next())
+        }
+        assertEquals(expectedSet2, subSet)
+    }
+
+    @Test
+    fun toHeadSet() {
+        val initialSet = mutableSetOf(10, 6, 100, 5, 33, 60, 59, 40)
+        val binarySet = AvlTree<Int>()
+        for (element in initialSet) {
+            binarySet.add(element)
+        }
+
+        val subSet = binarySet.headSet(60)
+        val expectedSet1 = mutableSetOf(5, 6, 10, 33, 40, 59)
+        var expectedSize = 6
+        for (i in subSet) {
+            assertTrue(i in expectedSet1)
+        }
+        assertEquals(expectedSize, subSet.size)
+        binarySet.add(79)
+        assertTrue(79 in binarySet)
+        assertFalse(79 in subSet)
+        assertEquals(expectedSize, subSet.size)
+        assertEquals(5, subSet.first())
+        assertEquals(59, subSet.last())
+
+        subSet.remove(40)
+        expectedSize--
+        assertFalse(40 in binarySet)
+        assertFalse(40 in subSet)
+        assertEquals(expectedSize, subSet.size)
+
+        try {
+            subSet.add(79)
+        } catch (e: IllegalArgumentException) {
+            assertFalse(79 in subSet)
+        }
+
+        val iterator1 = subSet.iterator()
+        val iterator2 = subSet.iterator()
+        while (iterator1.hasNext()) {
+            assertEquals(iterator1.next(), iterator2.next())
+        }
+
+        val iterator3 = subSet.iterator()
+        val expectedSet2 = mutableSetOf<Int>()
+        while (iterator3.hasNext()) {
+            expectedSet2.add(iterator3.next())
+        }
+        assertEquals(expectedSet2, subSet)
+    }
+
+    @Test
+    fun toTailSet() {
+        val initialSet = mutableSetOf(51, 18, 77, 89, 3, 40, 1, 8, 19)
+        val binarySet = AvlTree<Int>()
+        for (element in initialSet) {
+            binarySet.add(element)
+        }
+
+        val subSet = binarySet.tailSet(40)
+        val expectedSet1 = mutableSetOf(40, 51, 77, 89)
+        var expectedSize = 4
+        for (i in subSet) {
+            assertTrue(i in expectedSet1)
+        }
+        assertEquals(expectedSize, subSet.size)
+        binarySet.add(39)
+        assertTrue(39 in binarySet)
+        assertFalse(39 in subSet)
+        assertEquals(expectedSize, subSet.size)
+        assertEquals(40, subSet.first())
+        assertEquals(89, subSet.last())
+
+        subSet.remove(51)
+        expectedSize--
+        assertFalse(51 in binarySet)
+        assertFalse(51 in subSet)
+        assertEquals(expectedSize, subSet.size)
+
+        try {
+            subSet.add(39)
+        } catch (e: IllegalArgumentException) {
+            assertFalse(79 in subSet)
+        }
+
+        val iterator1 = subSet.iterator()
+        val iterator2 = subSet.iterator()
+        while (iterator1.hasNext()) {
+            assertEquals(iterator1.next(), iterator2.next())
+        }
+
+        val iterator3 = subSet.iterator()
+        val expectedSet2 = mutableSetOf<Int>()
+        while (iterator3.hasNext()) {
+            expectedSet2.add(iterator3.next())
+        }
+        assertEquals(expectedSet2, subSet)
+    }
 }

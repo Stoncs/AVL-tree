@@ -2,6 +2,7 @@ package avlTree
 
 import java.lang.IllegalArgumentException
 import java.util.*
+import kotlin.NoSuchElementException
 
 open class AvlTree<T : Comparable<T>> : AbstractMutableSet<T>(), SortedSet<T> {
 
@@ -43,6 +44,9 @@ open class AvlTree<T : Comparable<T>> : AbstractMutableSet<T>(), SortedSet<T> {
         return closest != null && element.compareTo(closest.value) == 0
     }
 
+    override fun isEmpty(): Boolean {
+        return size == 0
+    }
     override fun add(element: T): Boolean {
         val closest = find(element)
         val comparison = if (closest == null) -1 else element.compareTo(closest.value)
@@ -76,6 +80,7 @@ open class AvlTree<T : Comparable<T>> : AbstractMutableSet<T>(), SortedSet<T> {
 
     private fun removeNode(node: Node<T>): Boolean {
         var replacementNode: Node<T>
+        var rightTrue = false
         if (node.left == null && node.right == null) {
             //а если корень дерева?
             if (node == root) {
@@ -99,9 +104,11 @@ open class AvlTree<T : Comparable<T>> : AbstractMutableSet<T>(), SortedSet<T> {
             replacementNode = node.left!!
             while (replacementNode.right != null) {
                 replacementNode = replacementNode.right!!
+                rightTrue= true
             }
             node.value = replacementNode.value
-            replacementNode.parent = replacementNode.left
+            if (rightTrue) replacementNode.parent!!.right = replacementNode.left
+            else replacementNode.parent!!.left = replacementNode.left
         } else {
             replacementNode = node.right!!
             node.value = replacementNode.value
@@ -110,9 +117,9 @@ open class AvlTree<T : Comparable<T>> : AbstractMutableSet<T>(), SortedSet<T> {
 
         }
         size--
-        var nodeBalance = node
+        var nodeBalance = replacementNode.parent
         while (nodeBalance != root) {
-            nodeBalance = nodeBalance.parent!!
+            nodeBalance = nodeBalance!!.parent!!
             balance(nodeBalance)
         }
         return true
@@ -341,11 +348,8 @@ open class AvlTree<T : Comparable<T>> : AbstractMutableSet<T>(), SortedSet<T> {
             //В некоторых редких ситуациях после удаления элемента, когда дерево балансируется с помощью малого
             //левого поворота, становится невозможно пройтись до конца дерева
             if (stack.size == 0 && count < size) stack.push(currentNode!!.parent)
-            //для тестов
-            //println("${currentNode!!.value} " + height(currentNode))
             return currentNode!!.value
         }
-
 
         override fun remove() {
             check(currentNode != null)
@@ -362,7 +366,7 @@ open class AvlTree<T : Comparable<T>> : AbstractMutableSet<T>(), SortedSet<T> {
         override fun compare(o1: T, o2: T): Int {
             val x = find(o1)!!
             val y = find(o2)!!
-
+            if (x.value != o1 || y.value != o2) throw IllegalArgumentException()
             return when {
                 x.value == y.value -> 0
                 x.value > y.value -> -1
@@ -370,6 +374,27 @@ open class AvlTree<T : Comparable<T>> : AbstractMutableSet<T>(), SortedSet<T> {
             }
         }
 
+    }
+
+    override fun first(): T {
+        var currentNode: Node<T> = root ?: throw NoSuchElementException()
+        while (currentNode.left != null) {
+            currentNode = currentNode.left!!
+        }
+        return currentNode.value
+    }
+
+    override fun last(): T {
+        var currentNode: Node<T> = root ?: throw NoSuchElementException()
+        while (currentNode.right != null) {
+            currentNode = currentNode.right!!
+        }
+        return currentNode.value
+    }
+
+    override fun clear() {
+        root = null
+        size = 0
     }
 
     override fun subSet(fromElement: T, toElement: T): SortedSet<T> {
@@ -387,13 +412,19 @@ open class AvlTree<T : Comparable<T>> : AbstractMutableSet<T>(), SortedSet<T> {
 
     inner class SubTree(private val bottom: T?, private val top: T?, private val tree: AvlTree<T>) : AvlTree<T>() {
         override var size: Int
-            get() = super.size
+            get() {
+                var countSize = 0
+                for (value in tree) {
+                    if (check(value)) countSize++
+                }
+                return countSize
+            }
             set(value) {}
 
         private fun check(element: T): Boolean {
-            return (bottom != null && top != null && element > bottom && element < top ||
+            return (bottom != null && top != null && element >= bottom && element < top ||
                     bottom == null && top != null && element < top ||
-                    bottom != null && top == null && element > bottom)
+                    bottom != null && top == null && element >= bottom)
         }
         override fun add(element: T): Boolean {
             if (!check(element)) throw IllegalArgumentException()
@@ -423,7 +454,7 @@ open class AvlTree<T : Comparable<T>> : AbstractMutableSet<T>(), SortedSet<T> {
             private fun addRightAndLeftBranch(node: Node<T>?) {
                 if (node != null) {
                     addRightAndLeftBranch(node.right)
-                    stack.push(node)
+                    if (check(node.value))stack.push(node)
                     addRightAndLeftBranch(node.left)
                 }
             }
@@ -444,26 +475,20 @@ open class AvlTree<T : Comparable<T>> : AbstractMutableSet<T>(), SortedSet<T> {
             }
         }
 
-    }
-
-    override fun first(): T {
-        var currentNode: Node<T> = root ?: throw NoSuchElementException()
-        while (currentNode.left != null) {
-            currentNode = currentNode.left!!
+        override fun first(): T {
+            for (value in tree) {
+                if (check(value)) return value
+            }
+            throw NoSuchElementException()
         }
-        return currentNode.value
-    }
 
-    override fun last(): T {
-        var currentNode: Node<T> = root ?: throw NoSuchElementException()
-        while (currentNode.right != null) {
-            currentNode = currentNode.right!!
+        override fun last(): T {
+            var result: T? = null
+            for (value in tree) {
+                if (check(value)) result = value
+            }
+            if (result == null) throw NoSuchElementException()
+            return result
         }
-        return currentNode.value
-    }
-
-    override fun clear() {
-        root = null
-        size = 0
     }
 }
