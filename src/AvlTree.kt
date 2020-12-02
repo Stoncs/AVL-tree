@@ -320,7 +320,7 @@ open class AvlTree<T : Comparable<T>> : AbstractMutableSet<T>(), SortedSet<T> {
     override fun iterator(): MutableIterator<T> =
             BinarySearchTreeIterator()
 
-    inner class BinarySearchTreeIterator internal constructor() : MutableIterator<T> {
+    inner class BinarySearchTreeIterator : MutableIterator<T> {
         private var currentNode: Node<T>? = null
         private val stack = Stack<Node<T>>()
         private var count = 0
